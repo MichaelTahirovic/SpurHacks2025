@@ -1,21 +1,57 @@
 import React, { useState } from 'react';
 
 function UploadVideo() {
+  const url = "http://localhost:3000";
   const [files, setFiles] = useState([]);
   const [socialMedia, setSocialMedia] = useState('');
   const [socialMediaLink, setSocialMediaLink] = useState('');
+  const [error, setError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   
   const handleFileChange = (e) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
+      
+      // Check file size - warn if over 50MB
+      const oversizedFiles = newFiles.filter(file => file.size > 50 * 1024 * 1024);
+      if (oversizedFiles.length > 0) {
+        setError(`Warning: Some files exceed 50MB and may cause upload issues.`);
+      } else {
+        setError('');
+      }
+      
       setFiles(prevFiles => [...prevFiles, ...newFiles]);
     }
+  };
+
+  const convertBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+      
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
   };
   
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files) {
       const newFiles = Array.from(e.dataTransfer.files);
+      
+      // Check file size - warn if over 50MB
+      const oversizedFiles = newFiles.filter(file => file.size > 50 * 1024 * 1024);
+      if (oversizedFiles.length > 0) {
+        setError(`Warning: Some files exceed 50MB and may cause upload issues.`);
+      } else {
+        setError('');
+      }
+      
       setFiles(prevFiles => [...prevFiles, ...newFiles]);
     }
   };
@@ -26,14 +62,78 @@ function UploadVideo() {
   
   const handleRemoveFile = (index) => {
     setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    if (files.length <= 1) {
+      setError('');
+    }
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log("Files:", files);
-    console.log("Social Media:", socialMedia);
-    console.log("Link:", socialMediaLink);
+    setError('');
+    setIsUploading(true);
+    
+    try {
+      if (files.length > 0) {
+        // Handle file upload
+        const file = files[0]; // Process first file if multiple
+        
+        // Log file size for debugging
+        console.log(`File size: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
+        
+        if (file.size > 90 * 1024 * 1024) {
+          setError("File is too large. Please select a file under 90MB.");
+          setIsUploading(false);
+          return;
+        }
+        
+        const base64 = await convertBase64(file);
+        
+        // Remove the prefix from base64 string if needed
+        const base64Data = base64.split(',')[1];
+        
+        // Log base64 size for debugging
+        console.log(`Base64 data size: ${base64Data.length} chars (${(base64Data.length / (1024 * 1024)).toFixed(2)} MB)`);
+        
+        // Send to backend
+        const response = await fetch(`${url}/api/process-video`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            base64Data: base64Data
+          })
+        });
+        
+        const result = await response.json();
+        console.log("Backend response:", result);
+        // Handle the response (show results, etc.)
+      } 
+      else if (socialMediaLink) {
+        // Handle social media link
+        const response = await fetch(`${url}/api/process-link`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            platform: socialMedia,
+            url: socialMediaLink
+          })
+        });
+        
+        const result = await response.json();
+        console.log("Backend response for link:", result);
+      }
+    } catch (error) {
+      console.error("Error processing upload:", error);
+      setError(`Upload failed: ${error.message}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -67,6 +167,12 @@ function UploadVideo() {
           />
         </div>
         
+        {error && (
+          <div style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+        
         {/* File List */}
         {files.length > 0 && (
           <div className="file-list">
@@ -75,17 +181,18 @@ function UploadVideo() {
               <div key={index} className="file-item">
                 <div className="file-info">
                   <div className="progress-circle">
-                    {Math.floor(Math.random() * 100)}%
+                    {isUploading ? Math.floor(Math.random() * 100) : 0}%
                   </div>
                   <span>{file.name}</span>
                 </div>
                 <div className="file-actions">
                   <span className="file-size">
-                    {Math.floor(file.size / 1024)} KB
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB
                   </span>
                   <button 
                     onClick={() => handleRemoveFile(index)}
                     className="remove-button"
+                    disabled={isUploading}
                   >
                     ✕
                   </button>
@@ -117,6 +224,7 @@ function UploadVideo() {
               value={socialMedia}
               onChange={(e) => setSocialMedia(e.target.value)}
               className="form-control"
+              disabled={isUploading}
             >
               <option value="">Select a platform</option>
               <option value="youtube">YouTube</option>
@@ -138,6 +246,7 @@ function UploadVideo() {
               onChange={(e) => setSocialMediaLink(e.target.value)}
               placeholder="Paste your video URL here"
               className="form-control"
+              disabled={isUploading}
             />
           </div>
         </div>
@@ -146,11 +255,20 @@ function UploadVideo() {
           <button 
             onClick={handleSubmit}
             className="primary-button"
+            disabled={isUploading}
           >
-            Upload
+            {isUploading ? 'Uploading...' : 'Upload'}
           </button>
           
-          <button className="secondary-button">
+          <button 
+            className="secondary-button"
+            disabled={isUploading}
+            onClick={() => {
+              setFiles([]);
+              setSocialMediaLink('');
+              setError('');
+            }}
+          >
             Cancel
           </button>
         </div>
