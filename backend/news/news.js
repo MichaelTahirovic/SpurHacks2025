@@ -1,7 +1,10 @@
+const dotenv = require('dotenv');
 const https = require('https');
 const querystring = require('querystring');
 
-const API_TOKEN = '3Xb8vwsYNZAri7v8TMMMAZ7ekugTVxYsLn9EhRyu'; // Change
+dotenv.config();
+
+const API_TOKEN = process.env.NEWS_API_KEY; // Change
 const keywords = ['Trump', 'milk', 'cereal']; // Temp for testing
 const combinedSearch = keywords.join(' ');
 console.log(combinedSearch); // Remove
