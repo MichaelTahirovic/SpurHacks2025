@@ -1,1 +1,2 @@
-# SpurHacks2025
+#Ignore env variables
+.env

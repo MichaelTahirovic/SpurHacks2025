@@ -1,0 +1,19 @@
+# Ignore log files
+*.log
+
+# Ignore environment variable files
+.env
+
+# Ignore build directories
+dist/
+build/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore all .tmp files
+*.tmp
+
+# Ignore specific files
+secret.txt
