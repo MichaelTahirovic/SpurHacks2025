@@ -1,24 +1,30 @@
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
+
+// Import pages
+import DisplaySources from './pages/displaySources';
+import UploadVideo from './pages/uploadVideo';
+
+// Import layout
+import Layout from './components/Layout';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<UploadVideo />} />
+          <Route path="displaySources" element={<DisplaySources />} />
+          <Route path="*" element={
+            <div>
+              <h1>404 - Page Not Found</h1>
+              <p>The page you are looking for doesn't exist.</p>
+            </div>
+          } />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
