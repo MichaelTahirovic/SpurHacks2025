@@ -4,7 +4,7 @@ import './UploadVideo.css';
 
 
 function UploadVideo() {
-  const API_URL = "http://localhost:3001";
+  const API_URL = "http://localhost:5000";
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [socialMedia, setSocialMedia] = useState('');
