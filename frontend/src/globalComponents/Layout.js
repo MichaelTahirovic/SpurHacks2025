@@ -1,23 +1,40 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 
+function Header() {
+  return (
+      <header className="header-section">
+          <a href="/"><img src={process.env.PUBLIC_URL + '/assets/OrgLogo.png'} alt="Organization Logo" /></a>
+          <div className="header-section-buttons">
+            <a href="/">About Us</a>
+            <a href="/">Request Feature</a>
+          </div>
+          <div>
+          <a href="/"><button>Upload Video</button></a>
+          </div>
+      </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer-section">
+      <p>&copy; {new Date().getFullYear()} My React App. All rights reserved.</p>
+    </footer>
+  );
+}
+
 function Layout() {
   return (
     <div>
-      <div style={{ padding: '20px' }}>
+      <Header />
+      <div style={{ padding: '20px'}}>
         <Outlet />
       </div>
-      <footer style={{ 
-        background: '#333', 
-        color: 'white', 
-        textAlign: 'center', 
-        padding: '1rem',
-        marginTop: '2rem'
-      }}>
-        <p>&copy; {new Date().getFullYear()} My React App. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
 
-export default Layout; 
+export default Layout;
+export { Header }; 
