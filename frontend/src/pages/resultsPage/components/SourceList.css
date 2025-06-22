@@ -123,4 +123,10 @@
 .arrow {
     font-size: 2rem;
     line-height: 1;
+}
+
+.article-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 } 
