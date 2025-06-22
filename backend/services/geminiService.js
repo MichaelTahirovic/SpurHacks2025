@@ -7,10 +7,13 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+// Store extracted keywords for export
+let extractedKeywords = [];
+
 /**
  * Process video data using Gemini API
  * @param {string} base64Data - Base64 encoded video data
- * @returns {Promise<string>} - Analysis result from Gemini
+ * @returns {Promise<Object>} - Object containing analysis result and keywords
  */
 export async function analyzeVideoFromBase64(base64Data) {
   try {
@@ -45,7 +48,7 @@ export async function analyzeVideoFromBase64(base64Data) {
           {
             parts: [
               { 
-                text: `Based on this video summary: "${firstResultText}", list 5 keywords that would be important for web scraping related content."Based on this video summary, extract exactly 5 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video 4. [Object]: An important object or item featured in the video 5. [Context]: The overall context, situation, or category of the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc. Do not put the JSON in a code block."`
+                text: `Based on this video summary: "${firstResultText}", list 3 keywords that would be important for web scraping related content."Based on this video summary, extract exactly 3 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc. Do not put the JSON in a code block."`
               }
             ]
           }
@@ -54,25 +57,34 @@ export async function analyzeVideoFromBase64(base64Data) {
       
       // Log the second result but don't return it
       console.log("Secondary analysis result:", secondaryResult.response.text());
-      let keywords;
+      
       try {
-        keywords = JSON.parse(secondaryResult.response.text());
-        console.log("Extracted keywords:", keywords);
+        extractedKeywords = JSON.parse(secondaryResult.response.text());
+        console.log("Extracted keywords:", extractedKeywords);
       } 
       catch (e) {
         console.error("JSON parsing failed:", secondaryResult.response.text());
+        // Fallback to default keywords if parsing fails
+        extractedKeywords = ["news", "video", "current events", "media", "trending"];
       }
       
-      // Return the first result
-      return firstResultText;
+      // Return both the analysis text and keywords
+      return {
+        analysis: firstResultText,
+        keywords: extractedKeywords
+      };
     } catch (secondaryError) {
       // If the second call fails, just log the error but don't fail the main function
       console.error("Secondary analysis failed:", secondaryError);
+      // Set fallback keywords
+      extractedKeywords = ["news", "video", "current events", "media", "trending"];
       // Still return the first result even if second call fails
-      return result.response.text();
+      return {
+        analysis: result.response.text(),
+        keywords: extractedKeywords
+      };
     }
     
-    // The return is now handled in the try/catch blocks above
   } catch (error) {
     console.error('Error analyzing video with Gemini API:', error);
     throw new Error('Failed to analyze video with Gemini API');
@@ -82,7 +94,7 @@ export async function analyzeVideoFromBase64(base64Data) {
 /**
  * Process video from URL using Gemini API
  * @param {string} videoUrl - URL of the video to analyze
- * @returns {Promise<string>} - Analysis result from Gemini
+ * @returns {Promise<Object>} - Object containing analysis result and keywords
  */
 export async function analyzeVideoFromUrl(videoUrl) {
   try {
@@ -102,11 +114,45 @@ export async function analyzeVideoFromUrl(videoUrl) {
         ]
       });
     
-    return result.response.text();
+    const analysisText = result.response.text();
+    
+    // For URL-based videos, we'll use a simplified approach to get keywords
+    try {
+      const keywordResult = await model.generateContent({
+        contents: [
+          {
+            parts: [
+              { 
+                text: `Based on this video summary: "${analysisText}", extract exactly 3 specific keywords that would be useful for searching related news articles. Format as a JSON array of just the keywords without explanations.`
+              }
+            ]
+          }
+        ]
+      });
+      
+      try {
+        extractedKeywords = JSON.parse(keywordResult.response.text());
+      } catch (e) {
+        console.error("JSON parsing failed for URL video keywords:", e);
+        extractedKeywords = ["news", "video", "current events"];
+      }
+    } catch (keywordError) {
+      console.error("Failed to generate keywords for URL video:", keywordError);
+      extractedKeywords = ["news", "video", "current events"];
+    }
+    
+    return {
+      analysis: analysisText,
+      keywords: extractedKeywords
+    };
   } catch (error) {
     console.error('Error analyzing video URL with Gemini API:', error);
     throw new Error('Failed to analyze video URL with Gemini API');
   }
 }
 
+// Export the keywords for other modules to use
+export const getKeywords = () => extractedKeywords;
+
+// Default export remains the same
 export default analyzeVideoFromBase64;

@@ -61,9 +61,9 @@ const SourceList = () => {
                 url: source.url,
                 title: source.title || 'No Title Provided',
                 description: source.description || 'No description available.',
-                image: source.image || 'https://i.imgur.com/gS5gL6z.png',
-                author: source.author || 'Unknown',
-                date: source.date || 'N/A',
+                image: source.image_url || 'https://i.imgur.com/gS5gL6z.png', // Updated to match backend field name
+                author: source.source || 'Unknown', // Use source field as author
+                date: source.published_at ? new Date(source.published_at).toLocaleDateString() : 'N/A', // Format date
             }));
             setArticles(adaptedArticles);
         } else {

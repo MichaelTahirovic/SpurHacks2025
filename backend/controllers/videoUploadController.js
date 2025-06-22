@@ -1,4 +1,5 @@
 import { analyzeVideoFromBase64, analyzeVideoFromUrl } from '../services/geminiService.js';
+import { getNewsSources } from '../news/news.js';
 
 /**
  * Process a video file that was uploaded as base64
@@ -19,7 +20,22 @@ export const processVideo = async (req, res) => {
     console.log(`Processing video: ${fileName}, type: ${fileType}`);
     
     // Call Gemini API through our service
-    const analysis = await analyzeVideoFromBase64(base64Data);
+    const analysisResult = await analyzeVideoFromBase64(base64Data);
+    
+    // Extract analysis text and keywords
+    const { analysis, keywords } = analysisResult;
+    
+    console.log("Fetching news sources based on keywords:", keywords);
+    
+    // Get news sources based on keywords
+    let sources = [];
+    try {
+      sources = await getNewsSources(keywords);
+      console.log(`Found ${sources.length} news sources`);
+    } catch (newsError) {
+      console.error('Error fetching news sources:', newsError);
+      // Continue even if news sources fail - don't fail the whole request
+    }
     
     res.json({ 
       success: true, 
@@ -27,7 +43,9 @@ export const processVideo = async (req, res) => {
       results: {
         fileName,
         fileType,
-        analysis
+        analysis,
+        keywords,
+        sources
       }
     });
   } catch (error) {
@@ -58,7 +76,22 @@ export const processLink = async (req, res) => {
     console.log(`Processing ${platform} link: ${url}`);
     
     // Call Gemini API through our service
-    const analysis = await analyzeVideoFromUrl(url);
+    const analysisResult = await analyzeVideoFromUrl(url);
+    
+    // Extract analysis text and keywords
+    const { analysis, keywords } = analysisResult;
+    
+    console.log("Fetching news sources based on keywords:", keywords);
+    
+    // Get news sources based on keywords
+    let sources = [];
+    try {
+      sources = await getNewsSources(keywords);
+      console.log(`Found ${sources.length} news sources`);
+    } catch (newsError) {
+      console.error('Error fetching news sources:', newsError);
+      // Continue even if news sources fail - don't fail the whole request
+    }
     
     res.json({ 
       success: true, 
@@ -66,7 +99,9 @@ export const processLink = async (req, res) => {
       results: {
         platform,
         url,
-        analysis
+        analysis,
+        keywords,
+        sources
       }
     });
   } catch (error) {
