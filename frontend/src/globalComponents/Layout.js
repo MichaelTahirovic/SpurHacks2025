@@ -19,9 +19,7 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="footer-section" /*style={{
-      position: document.body.scrollHeight > window.innerHeight ? 'relative' : 'fixed'
-    }}*/>
+    <footer className="footer-section">
       <p>&copy; {new Date().getFullYear()} My React App. All rights reserved.</p>
     </footer>
   );
