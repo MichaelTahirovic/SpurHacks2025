@@ -172,7 +172,7 @@ function UploadVideo() {
   };
 
   return (
-    <div className="upload-container">
+    <div id="upload-video" className="upload-container">
       {/* Left Side - File Upload */}
       <div className="upload-section">
         <h2 className="section-title">File Upload</h2>
