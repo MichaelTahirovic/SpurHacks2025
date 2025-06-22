@@ -1,17 +1,17 @@
 import dotenv from 'dotenv';
 import https from 'https';
 import querystring from 'querystring';
+import keywords from '../services/geminiService.js';
 
 dotenv.config(); // Load env variables
 
 const API_TOKEN = process.env.NEWS_API_KEY; // Change
-const keywords = ['Trump', 'milk', 'cereal']; // Temp for testing
-const combinedSearch = keywords.join(' ');
-console.log(combinedSearch); // Remove
+//const keywords = ['Trump', 'milk', 'cereal']; // Temp for testing
+//const combinedSearch = keywords.join(' ');
 
 const query = querystring.stringify({
   api_token: API_TOKEN,
-  search: combinedSearch,
+  search: keywords,
   locale: 'us',
   language: 'en',
 });
@@ -31,7 +31,7 @@ https.get(url, (res) => {
           console.error('No articles found.');
           return;
         }
-  
+        // Output for testing
         articles.forEach((article, i) => {
             console.log(`${i + 1}. ${article.title}`);
             console.log(`   Source: ${article.source}`);

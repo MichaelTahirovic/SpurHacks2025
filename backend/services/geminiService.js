@@ -45,7 +45,7 @@ export async function analyzeVideoFromBase64(base64Data) {
           {
             parts: [
               { 
-                text: `Based on this video summary: "${firstResultText}", list 5 keywords that would be important for web scraping related content."Based on this video summary, extract exactly 5 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video 4. [Object]: An important object or item featured in the video 5. [Context]: The overall context, situation, or category of the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc."`
+                text: `Based on this video summary: "${firstResultText}", list 5 keywords that would be important for web scraping related content."Based on this video summary, extract exactly 5 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video 4. [Object]: An important object or item featured in the video 5. [Context]: The overall context, situation, or category of the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc. Do not put the JSON in a code block."`
               }
             ]
           }
@@ -54,6 +54,14 @@ export async function analyzeVideoFromBase64(base64Data) {
       
       // Log the second result but don't return it
       console.log("Secondary analysis result:", secondaryResult.response.text());
+      let keywords;
+      try {
+        keywords = JSON.parse(secondaryResult.response.text());
+        console.log("Extracted keywords:", keywords);
+      } 
+      catch (e) {
+        console.error("JSON parsing failed:", secondaryResult.response.text());
+      }
       
       // Return the first result
       return firstResultText;
@@ -100,3 +108,5 @@ export async function analyzeVideoFromUrl(videoUrl) {
     throw new Error('Failed to analyze video URL with Gemini API');
   }
 }
+
+export default analyzeVideoFromBase64;
