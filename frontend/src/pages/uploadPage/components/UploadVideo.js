@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function UploadVideo() {
   const API_URL = "http://localhost:3000";
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [socialMedia, setSocialMedia] = useState('');
   const [socialMediaLink, setSocialMediaLink] = useState('');
@@ -115,6 +117,14 @@ function UploadVideo() {
         
         if (result.success) {
           setAnalysisResult(result.results.analysis);
+          // Navigate to results page with data
+          navigate('/displaySources', { 
+            state: { 
+              analysis: result.results.analysis,
+              sources: result.results.sources || [],
+              videoData: base64Data // Pass the base64 video data to display on results page
+            } 
+          });
         } else {
           setError(result.error || 'An error occurred during processing');
         }
@@ -137,6 +147,14 @@ function UploadVideo() {
         
         if (result.success) {
           setAnalysisResult(result.results.analysis);
+          // Navigate to results page with data
+          navigate('/displaySources', { 
+            state: { 
+              analysis: result.results.analysis,
+              sources: result.results.sources || [],
+              videoUrl: socialMediaLink // Pass the video URL for display on results page
+            } 
+          });
         } else {
           setError(result.error || 'An error occurred during processing');
         }
