@@ -48,9 +48,8 @@ export async function getNewsSources(customKeywords = null) {
   const query = querystring.stringify({
     api_token: API_TOKEN,
     search: searchTerms,
-    locale: 'us',
+    locale: 'us,ca',
     language: 'en',
-    limit: 5 // Limit to 5 results
   });
   
   console.log(`Searching news with terms: "${searchTerms}"`);
