@@ -99,8 +99,7 @@ const AISummary = () => {
                 <div className="verification-real">
                     <h1>Video Verified as Real</h1>
                     <p className="verification-note">
-                        Found {highlyRelevantSources} highly relevant source{highlyRelevantSources !== 1 ? 's' : ''} 
-                        confirming this content.
+                        Found {highlyRelevantSources} highly relevant source{highlyRelevantSources !== 1 ? 's' : ''} confirming this content.
                     </p>
                 </div>
             );
