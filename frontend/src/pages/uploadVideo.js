@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 
 function UploadVideo() {
-  const url = "http://localhost:3000";
+  const API_URL = "http://localhost:3000";
   const [files, setFiles] = useState([]);
   const [socialMedia, setSocialMedia] = useState('');
   const [socialMediaLink, setSocialMediaLink] = useState('');
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState('');
   
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -71,6 +72,7 @@ function UploadVideo() {
     e.preventDefault();
     setError('');
     setIsUploading(true);
+    setAnalysisResult('');
     
     try {
       if (files.length > 0) {
@@ -94,8 +96,8 @@ function UploadVideo() {
         // Log base64 size for debugging
         console.log(`Base64 data size: ${base64Data.length} chars (${(base64Data.length / (1024 * 1024)).toFixed(2)} MB)`);
         
-        // Send to backend
-        const response = await fetch(`${url}/api/process-video`, {
+        // Send to backend - updated endpoint
+        const response = await fetch(`${API_URL}/api/videos/process`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -110,11 +112,16 @@ function UploadVideo() {
         
         const result = await response.json();
         console.log("Backend response:", result);
-        // Handle the response (show results, etc.)
+        
+        if (result.success) {
+          setAnalysisResult(result.results.analysis);
+        } else {
+          setError(result.error || 'An error occurred during processing');
+        }
       } 
       else if (socialMediaLink) {
-        // Handle social media link
-        const response = await fetch(`${url}/api/process-link`, {
+        // Handle social media link - updated endpoint
+        const response = await fetch(`${API_URL}/api/videos/process-link`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -127,6 +134,12 @@ function UploadVideo() {
         
         const result = await response.json();
         console.log("Backend response for link:", result);
+        
+        if (result.success) {
+          setAnalysisResult(result.results.analysis);
+        } else {
+          setError(result.error || 'An error occurred during processing');
+        }
       }
     } catch (error) {
       console.error("Error processing upload:", error);
@@ -267,12 +280,27 @@ function UploadVideo() {
               setFiles([]);
               setSocialMediaLink('');
               setError('');
+              setAnalysisResult('');
             }}
           >
             Cancel
           </button>
         </div>
       </div>
+
+      {/* Analysis Results */}
+      {analysisResult && (
+        <div className="analysis-results" style={{ 
+          marginTop: '20px', 
+          padding: '20px', 
+          backgroundColor: '#f7f7ff',
+          borderRadius: '10px',
+          width: '100%'
+        }}>
+          <h3>Analysis Results</h3>
+          <p>{analysisResult}</p>
+        </div>
+      )}
     </div>
   );
 }
