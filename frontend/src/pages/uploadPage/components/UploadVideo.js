@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './UploadVideo.css';
+
 
 function UploadVideo() {
   const API_URL = "http://localhost:3000";
