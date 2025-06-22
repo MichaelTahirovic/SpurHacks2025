@@ -14,11 +14,12 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
  */
 export async function analyzeVideoFromBase64(base64Data) {
   try {
+    // First API call - the one we'll return to the user
     const result = await model.generateContent({
         contents: [
           {
             parts: [
-              { text: "Please summarize the video in 3 sentences." },
+                { text: "Provide a concise 2-sentence summary of this video that clearly describes: 1) The main action or event taking place, and 2) The setting or context. If any recognizable public figures, celebrities, politicians, or well-known individuals appear in the video, explicitly identify them by full name. Focus on accurately naming only individuals who would be widely recognized by the general public. Do not speculate on the identity of unknown individuals." },
               { 
                 inline_data: {
                   mime_type: "video/mp4",
@@ -30,7 +31,40 @@ export async function analyzeVideoFromBase64(base64Data) {
         ]
       });
     
-    return result.response.text();
+    // Second API call - just for logging
+    try {
+      // Get the first result's text
+      const firstResultText = result.response.text();
+      
+      console.log("Making secondary API call using the first response...");
+      console.log("First response:", firstResultText);
+      
+      // Use the first result as input for the second call
+      const secondaryResult = await model.generateContent({
+        contents: [
+          {
+            parts: [
+              { 
+                text: `Based on this video summary: "${firstResultText}", list 5 keywords that would be important for web scraping related content."Based on this video summary, extract exactly 5 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video 4. [Object]: An important object or item featured in the video 5. [Context]: The overall context, situation, or category of the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc."`
+              }
+            ]
+          }
+        ]
+      });
+      
+      // Log the second result but don't return it
+      console.log("Secondary analysis result:", secondaryResult.response.text());
+      
+      // Return the first result
+      return firstResultText;
+    } catch (secondaryError) {
+      // If the second call fails, just log the error but don't fail the main function
+      console.error("Secondary analysis failed:", secondaryError);
+      // Still return the first result even if second call fails
+      return result.response.text();
+    }
+    
+    // The return is now handled in the try/catch blocks above
   } catch (error) {
     console.error('Error analyzing video with Gemini API:', error);
     throw new Error('Failed to analyze video with Gemini API');
@@ -48,11 +82,11 @@ export async function analyzeVideoFromUrl(videoUrl) {
         contents: [
           {
             parts: [
-              { text: "Please summarize the video in 3 sentences." },
+              { text: "Please summarize the video in 3 sentences. " },
               { 
-                inline_data: {
-                  mime_type: "video/mp4",
-                  data: base64Data
+                file_data: {
+                  file_uri: videoUrl,
+                  mime_type: "video/mp4"
                 }
               }
             ]
