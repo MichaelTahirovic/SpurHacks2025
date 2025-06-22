@@ -1,8 +1,8 @@
-const dotenv = require('dotenv');
-const https = require('https');
-const querystring = require('querystring');
+import dotenv from 'dotenv';
+import https from 'https';
+import querystring from 'querystring';
 
-dotenv.config();
+dotenv.config(); // Load env variables
 
 const API_TOKEN = process.env.NEWS_API_KEY; // Change
 const keywords = ['Trump', 'milk', 'cereal']; // Temp for testing
