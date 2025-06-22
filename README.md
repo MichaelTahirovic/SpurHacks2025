@@ -11,7 +11,7 @@ The solution to giving an analysis on AI use in video production based on news a
 
 ## Cloning
 ```bash
-git clone git@github.com:MichaelTahirovic/SpurHacks2025.git
+git clone https://github.com/MichaelTahirovic/SpurHacks2025.git
 ```
 
 ## Backend Setup
