@@ -106,6 +106,7 @@ body {
   align-items: center;
   text-align: center; 
   margin-top: 2rem;
+  position: relative;
   bottom: 0;
   width: 100%;
   height: auto;
