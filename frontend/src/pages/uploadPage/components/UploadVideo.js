@@ -287,20 +287,6 @@ function UploadVideo() {
           </button>
         </div>
       </div>
-
-      {/* Analysis Results */}
-      {analysisResult && (
-        <div className="analysis-results" style={{ 
-          marginTop: '20px', 
-          padding: '20px', 
-          backgroundColor: '#f7f7ff',
-          borderRadius: '10px',
-          width: '100%'
-        }}>
-          <h3>Analysis Results</h3>
-          <p>{analysisResult}</p>
-        </div>
-      )}
     </div>
   );
 }
