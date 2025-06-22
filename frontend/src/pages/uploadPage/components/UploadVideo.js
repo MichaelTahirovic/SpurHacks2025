@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UploadVideo.css';
 
@@ -12,6 +12,8 @@ function UploadVideo() {
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
+  const abortControllerRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -72,11 +74,41 @@ function UploadVideo() {
     }
   };
   
+  // Function to simulate progress updates
+  const simulateProgress = () => {
+    // Reset progress
+    setUploadProgress(0);
+    
+    // Create an interval that updates progress
+    const interval = setInterval(() => {
+      setUploadProgress(prevProgress => {
+        // Increment progress, but cap at 95% (final 5% when response comes back)
+        const newProgress = prevProgress + Math.random() * 5;
+        if (newProgress >= 95) {
+          clearInterval(interval);
+          return 95;
+        }
+        return newProgress;
+      });
+    }, 500);
+    
+    // Store interval ID to clear it later
+    return interval;
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsUploading(true);
     setAnalysisResult('');
+    setUploadProgress(0);
+    
+    // Create a new AbortController for this upload
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
+    // Start the progress simulation
+    const progressInterval = simulateProgress();
     
     try {
       if (files.length > 0) {
@@ -89,6 +121,7 @@ function UploadVideo() {
         if (file.size > 90 * 1024 * 1024) {
           setError("File is too large. Please select a file under 90MB.");
           setIsUploading(false);
+          clearInterval(progressInterval);
           return;
         }
         
@@ -100,7 +133,7 @@ function UploadVideo() {
         // Log base64 size for debugging
         console.log(`Base64 data size: ${base64Data.length} chars (${(base64Data.length / (1024 * 1024)).toFixed(2)} MB)`);
         
-        // Send to backend - updated endpoint
+        // Send to backend - updated endpoint with abort signal
         const response = await fetch(`${API_URL}/api/videos/process`, {
           method: 'POST',
           headers: {
@@ -111,11 +144,15 @@ function UploadVideo() {
             fileType: file.type,
             fileSize: file.size,
             base64Data: base64Data
-          })
+          }),
+          signal // Add the abort signal
         });
         
         const result = await response.json();
         console.log("Backend response:", result);
+        
+        // Set progress to 100% when complete
+        setUploadProgress(100);
         
         if (result.success) {
           setAnalysisResult(result.results.analysis);
@@ -133,7 +170,7 @@ function UploadVideo() {
         }
       } 
       else if (socialMediaLink) {
-        // Handle social media link - updated endpoint
+        // Handle social media link - updated endpoint with abort signal
         const response = await fetch(`${API_URL}/api/videos/process-link`, {
           method: 'POST',
           headers: {
@@ -142,11 +179,15 @@ function UploadVideo() {
           body: JSON.stringify({
             platform: socialMedia,
             url: socialMediaLink
-          })
+          }),
+          signal // Add the abort signal
         });
         
         const result = await response.json();
         console.log("Backend response for link:", result);
+        
+        // Set progress to 100% when complete
+        setUploadProgress(100);
         
         if (result.success) {
           setAnalysisResult(result.results.analysis);
@@ -164,11 +205,34 @@ function UploadVideo() {
         }
       }
     } catch (error) {
-      console.error("Error processing upload:", error);
-      setError(`Upload failed: ${error.message}`);
+      // Check if the error was caused by an abort
+      if (error.name === 'AbortError') {
+        console.log('Upload was cancelled');
+        setError('Upload cancelled');
+      } else {
+        console.error("Error processing upload:", error);
+        setError(`Upload failed: ${error.message}`);
+      }
     } finally {
       setIsUploading(false);
+      clearInterval(progressInterval);
     }
+  };
+
+  // Function to handle cancellation
+  const handleCancel = () => {
+    if (isUploading && abortControllerRef.current) {
+      // Abort the current fetch request
+      abortControllerRef.current.abort();
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+    
+    // Reset the form
+    setFiles([]);
+    setSocialMediaLink('');
+    setError('');
+    setAnalysisResult('');
   };
 
   return (
@@ -215,9 +279,6 @@ function UploadVideo() {
             {files.map((file, index) => (
               <div key={index} className="file-item">
                 <div className="file-info">
-                  <div className="progress-circle">
-                    {isUploading ? Math.floor(Math.random() * 100) : 0}%
-                  </div>
                   <span>{file.name}</span>
                 </div>
                 <div className="file-actions">
@@ -287,26 +348,32 @@ function UploadVideo() {
         </div>
         
         <div className="button-container">
-          <button 
-            onClick={handleSubmit}
-            className="primary-button"
-            disabled={isUploading}
-          >
-            {isUploading ? 'Uploading...' : 'Upload'}
-          </button>
+          <div className="buttons-wrapper">
+            <button 
+              onClick={handleSubmit}
+              className="primary-button"
+              disabled={isUploading}
+            >
+              {isUploading ? 'Uploading...' : 'Upload'}
+            </button>
+            
+            <button 
+              className="secondary-button"
+              onClick={handleCancel}
+            >
+              {isUploading ? 'Stop Upload' : 'Cancel'}
+            </button>
+          </div>
           
-          <button 
-            className="secondary-button"
-            disabled={isUploading}
-            onClick={() => {
-              setFiles([]);
-              setSocialMediaLink('');
-              setError('');
-              setAnalysisResult('');
-            }}
-          >
-            Cancel
-          </button>
+          {isUploading && (
+            <div className="progress-container">
+              <div 
+                className="progress-bar" 
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+              <div className="progress-text">{Math.round(uploadProgress)}%</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
