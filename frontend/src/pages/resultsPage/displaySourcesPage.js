@@ -11,10 +11,4 @@ export function DisplaySourcesPage() {
     );
 }
 
-// The old DisplaySourcesPage component is no longer needed
-// as its logic has been merged into AISummary and SourceList.
-
-// We will make DisplaySourcePageFull the default export
-// if there is a routing system that expects a default export.
-// For now, we will leave it as a named export.
 export default DisplaySourcesPage; 

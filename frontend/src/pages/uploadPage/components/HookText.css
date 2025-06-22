@@ -1,0 +1,43 @@
+/*Hook Text Styles*/
+.hook-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    text-align: center;
+    margin-top: 0rem;
+    margin-bottom: 5rem;
+  }
+  .hook-text-container h1 {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+  }
+  .hook-text-container button {
+    background-color: #4f4f4f;
+    color: white;
+    font-size: 1.3rem;
+    width: 20rem;
+    height: 3rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .hook-text-container button:hover {
+    background-color: #1cb0eb;
+    cursor: pointer;
+    outline: 4px solid #d1d1d1;
+    outline-offset: 0px;
+    width: 21rem;
+    height: 3.2rem;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  .brief-description {
+    margin-top: 2rem;
+  }
+    .brief-description h2 {
+    margin: 0;
+  }
+  /*End of hook text styles*/

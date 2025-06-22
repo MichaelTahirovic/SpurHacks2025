@@ -4,7 +4,7 @@ import './SourceList.css';
 
 const Article = ({ article }) => {
     return (
-        <a href={article.url} target="_blank" rel="noopener noreferrer" className="article-card-link">
+        <div target="_blank" rel="noopener noreferrer" className="article-card-link">
             <div className="article-card">
                 <div className="article-image">
                     <img src={article.image || 'https://i.imgur.com/gS5gL6z.png'} alt={article.title} />
@@ -12,17 +12,16 @@ const Article = ({ article }) => {
                 <div className="article-content">
                     <div className="article-header">
                         <h2>{article.title}</h2>
-                        <span>{article.date}</span>
+                        <p className="author">Author: {article.author}, Published: {article.date}</p>
                     </div>
-                    <p className="author">Author: {article.author}</p>
                     <p>{article.description}</p>
                 </div>
-                <div className="article-action">
+                <a href={article.url} className="article-action">
                     <span className="read-article-text">Read Article</span>
                     <span className="arrow">&gt;</span>
-                </div>
+                </a>
             </div>
-        </a>
+        </div>
     );
 };
 

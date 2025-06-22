@@ -1,4 +1,5 @@
 import React from 'react';
+import './HookText.css';
 
 function HookText() {
     return (

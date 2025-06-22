@@ -1,5 +1,6 @@
 import UploadVideo from './components/UploadVideo';
 import HookText from './components/HookText';
+import AboutUs from './components/AboutUs';
 
 
 function UploadVideoPage() {
@@ -7,6 +8,7 @@ function UploadVideoPage() {
     <>
     <HookText />
     <UploadVideo />
+    <AboutUs />
     </>
   )
 };
