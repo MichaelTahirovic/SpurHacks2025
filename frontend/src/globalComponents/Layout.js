@@ -8,6 +8,7 @@ function Header() {
           <div className="header-section-buttons">
             <a href="/">About Us</a>
             <a href="/">Request Feature</a>
+            <a href="/displaySources">Past Results</a>
           </div>
           <div>
           <a href="/"><button>Upload Video</button></a>
@@ -18,7 +19,9 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="footer-section">
+    <footer className="footer-section" style={{
+      position: document.body.scrollHeight > window.innerHeight ? 'relative' : 'fixed'
+    }}>
       <p>&copy; {new Date().getFullYear()} My React App. All rights reserved.</p>
     </footer>
   );
