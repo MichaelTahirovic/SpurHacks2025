@@ -25,40 +25,11 @@ const Article = ({ article }) => {
     );
 };
 
-/* testing articles with relevance scores */
-const testingArticles = [
-    {
-        id: 1,
-        url: 'https://www.example.com/article1',
-        title: 'Test Article 1: The Rise of AI',
-        description: 'A deep dive into the recent advancements in artificial intelligence and machine learning.',
-        image: 'https://i.imgur.com/gS5gL6z.png',
-        author: 'Jane Doe',
-        date: 'Oct 26, 2023',
-        relevance: {
-            score: 8
-        }
-    },
-    {
-        id: 2,
-        url: 'https://www.example.com/article2',
-        title: 'Test Article 2: Understanding Deepfakes',
-        description: 'How to spot deepfakes and understand the technology behind them.',
-        image: 'https://i.imgur.com/gS5gL6z.png',
-        author: 'John Smith',
-        date: 'Oct 25, 2023',
-        relevance: {
-            score: 6
-        }
-    },
-];
-
 const SourceList = () => {
     const location = useLocation();
     const [articles, setArticles] = useState([]);
 
     useEffect(() => {
-        // Use live data if available, otherwise fall back to test data
         if (location.state && location.state.sources && location.state.sources.length > 0) {
             // Adapt the incoming sources data to the format expected by the Article component
             const adaptedArticles = location.state.sources
@@ -76,13 +47,6 @@ const SourceList = () => {
                 .filter(article => article.relevance && article.relevance.score > 9);
             
             setArticles(adaptedArticles);
-        } else {
-            // If no sources are passed via location state, use the testing articles
-            // but filter by relevance score > 9
-            const filteredTestArticles = testingArticles.filter(
-                article => article.relevance && article.relevance.score > 9
-            );
-            setArticles(filteredTestArticles);
         }
     }, [location]);
 

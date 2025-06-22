@@ -2,7 +2,7 @@ import './AboutUs.css';
 
 function AboutUs() {
     return (
-        <div className="about-us-container">
+        <div id="about-us" className="about-us-container">
             <div className="about-us-header">
                 <h1>Why </h1><img src={process.env.PUBLIC_URL + '/assets/OrgLogo.png'} alt="VerifAI Logo" /><h1> ?</h1>
             </div>
@@ -24,7 +24,8 @@ function AboutUs() {
                     it is one of the first necessary steps in creating a more
                     secure, transparent, and trustworthy internet with the
                     mainstream rise of AI.<br /><br />
-                    VerifAI is a free application developed by a team of four
+                    VerifAI is a free application developed by Michael Tahirovic, Edward He,
+                    Emad Rahman, and Arindam Datta, a four-person team of freelance
                     developers at the 2025 SpurHacks Hackathon.
                 </p>
             </div>

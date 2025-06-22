@@ -32,6 +32,7 @@
     color: rgb(114, 114, 114);
     font-size: 1.02rem;
     transition: all 0.2s ease;
+    cursor: pointer;
   }
   .header-section button {
     background-color: #1b1b1b;
