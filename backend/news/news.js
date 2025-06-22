@@ -5,7 +5,7 @@ import keywords from '../services/geminiService.js';
 
 dotenv.config(); // Load env variables
 
-const API_TOKEN = process.env.NEWS_API_KEY; // Change
+const API_TOKEN = process.env.THENEWS_API_KEY; // Change
 //const keywords = ['Trump', 'milk', 'cereal']; // Temp for testing
 //const combinedSearch = keywords.join(' ');
 
@@ -26,7 +26,7 @@ https.get(url, (res) => {
     res.on('end', () => {
       try {
         const json = JSON.parse(data);
-        articles = json.data
+        let articles = json.data;
         if (!json.data) {
           console.error('No articles found.');
           return;
@@ -44,5 +44,4 @@ https.get(url, (res) => {
   }).on('error', (err) => {
     console.error('HTTPS error:', err.message);
   });
-
   
