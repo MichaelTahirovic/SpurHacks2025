@@ -26,7 +26,7 @@ const Article = ({ article }) => {
     );
 };
 
-/* testing articles */
+/* testing articles with relevance scores */
 const testingArticles = [
     {
         id: 1,
@@ -35,7 +35,10 @@ const testingArticles = [
         description: 'A deep dive into the recent advancements in artificial intelligence and machine learning.',
         image: 'https://i.imgur.com/gS5gL6z.png',
         author: 'Jane Doe',
-        date: 'Oct 26, 2023'
+        date: 'Oct 26, 2023',
+        relevance: {
+            score: 8
+        }
     },
     {
         id: 2,
@@ -44,7 +47,10 @@ const testingArticles = [
         description: 'How to spot deepfakes and understand the technology behind them.',
         image: 'https://i.imgur.com/gS5gL6z.png',
         author: 'John Smith',
-        date: 'Oct 25, 2023'
+        date: 'Oct 25, 2023',
+        relevance: {
+            score: 6
+        }
     },
 ];
 
@@ -56,19 +62,28 @@ const SourceList = () => {
         // Use live data if available, otherwise fall back to test data
         if (location.state && location.state.sources && location.state.sources.length > 0) {
             // Adapt the incoming sources data to the format expected by the Article component
-            const adaptedArticles = location.state.sources.map((source, index) => ({
-                id: index,
-                url: source.url,
-                title: source.title || 'No Title Provided',
-                description: source.description || 'No description available.',
-                image: source.image_url || 'https://i.imgur.com/gS5gL6z.png', // Updated to match backend field name
-                author: source.source || 'Unknown', // Use source field as author
-                date: source.published_at ? new Date(source.published_at).toLocaleDateString() : 'N/A', // Format date
-            }));
+            const adaptedArticles = location.state.sources
+                .map((source, index) => ({
+                    id: index,
+                    url: source.url,
+                    title: source.title || 'No Title Provided',
+                    description: source.description || 'No description available.',
+                    image: source.image_url || 'https://i.imgur.com/gS5gL6z.png',
+                    author: source.source || 'Unknown',
+                    date: source.published_at ? new Date(source.published_at).toLocaleDateString() : 'N/A',
+                    relevance: source.relevance || null
+                }))
+                // Filter out articles with relevance score <= 9 or no relevance score
+                .filter(article => article.relevance && article.relevance.score > 9);
+            
             setArticles(adaptedArticles);
         } else {
-            // If no sources are passed via location state, use the testing articles.
-            setArticles(testingArticles);
+            // If no sources are passed via location state, use the testing articles
+            // but filter by relevance score > 9
+            const filteredTestArticles = testingArticles.filter(
+                article => article.relevance && article.relevance.score > 9
+            );
+            setArticles(filteredTestArticles);
         }
     }, [location]);
 
@@ -77,8 +92,8 @@ const SourceList = () => {
             {articles.length > 0 ? (
                 <>
                     <div className="source-list-header">
-                        <h1>Discovered Sources</h1>
-                        <p>Here are some articles VerifAI found relating to your video.</p>
+                        <h1>Verified Sources</h1>
+                        <p>Here are highly relevant articles VerifAI found relating to your video.</p>
                     </div>
                     <div className="articles-list">
                         {articles.map(article => (
@@ -88,8 +103,8 @@ const SourceList = () => {
                 </>
             ) : (
                 <div className="source-list-header">
-                    <h1>No sources found</h1>
-                    <p>VerifAI was unable to find any sources relating to your video.</p>
+                    <h1>No highly relevant sources found</h1>
+                    <p>VerifAI was unable to find any highly relevant sources for your video.</p>
                 </div>
             )}
         </div>

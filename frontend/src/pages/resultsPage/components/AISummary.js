@@ -8,6 +8,8 @@ const AISummary = () => {
     const [isVideoFromBase64, setIsVideoFromBase64] = useState(false);
     const [analysis, setAnalysis] = useState('Error: No analysis provided.');
     const [keywords, setKeywords] = useState([]);
+    const [isVideoReal, setIsVideoReal] = useState(null);
+    const [highlyRelevantSources, setHighlyRelevantSources] = useState(0);
 
     useEffect(() => {
         if (location.state) {
@@ -32,6 +34,17 @@ const AISummary = () => {
                 setVideoUrl(location.state.videoUrl);
                 setIsVideoFromBase64(false);
             }
+            
+            // Check for highly relevant sources (score > 9)
+            if (location.state.sources && Array.isArray(location.state.sources)) {
+                const relevantSources = location.state.sources.filter(
+                    source => source.relevance && source.relevance.score > 9
+                );
+                setHighlyRelevantSources(relevantSources.length);
+                setIsVideoReal(relevantSources.length > 0);
+            } else {
+                setIsVideoReal(false);
+            }
         }
     }, [location]);
 
@@ -53,6 +66,31 @@ const AISummary = () => {
         } catch (error) {
             console.error("Error converting base64 to video:", error);
             setVideoUrl('');
+        }
+    };
+
+    const renderVerificationStatus = () => {
+        if (isVideoReal === null) {
+            return <h1 className="verification-pending">Verification Pending...</h1>;
+        } else if (isVideoReal) {
+            return (
+                <div className="verification-real">
+                    <h1>Video Verified as Real</h1>
+                    <p className="verification-note">
+                        Found {highlyRelevantSources} highly relevant sources {highlyRelevantSources !== 1 ? 's' : ''} 
+                        confirming this content.
+                    </p>
+                </div>
+            );
+        } else {
+            return (
+                <div className="verification-ai">
+                    <h1>Likely AI-Generated Content</h1>
+                    <p className="verification-note">
+                        No highly relevant sources found to verify this content.
+                    </p>
+                </div>
+            );
         }
     };
 
@@ -85,8 +123,11 @@ const AISummary = () => {
                 )}
             </div>
             <div className="summary-section">
-                <h1>AI Analysis</h1>
-                <p>{analysis}</p>
+                {renderVerificationStatus()}
+                <div className="analysis-section">
+                    <h2>Analysis</h2>
+                    <p>{analysis}</p>
+                </div>
                 {keywords && keywords.length > 0 && (
                     <div className="keywords-section">
                         <h3>Keywords</h3>

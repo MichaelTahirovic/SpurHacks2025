@@ -1,5 +1,6 @@
 import { analyzeVideoFromBase64, analyzeVideoFromUrl } from '../services/geminiService.js';
 import { getNewsSources } from '../news/news.js';
+import checkArticleRelevance from '../services/relevanceChecker.js';
 
 /**
  * Process a video file that was uploaded as base64
@@ -32,6 +33,13 @@ export const processVideo = async (req, res) => {
     try {
       sources = await getNewsSources(keywords);
       console.log(`Found ${sources.length} news sources`);
+      
+      // Check relevance of articles to video analysis
+      if (sources.length > 0) {
+        console.log("Checking article relevance to video analysis...");
+        sources = await checkArticleRelevance(analysis, sources);
+        console.log("Articles sorted by relevance score");
+      }
     } catch (newsError) {
       console.error('Error fetching news sources:', newsError);
       // Continue even if news sources fail - don't fail the whole request
@@ -88,6 +96,13 @@ export const processLink = async (req, res) => {
     try {
       sources = await getNewsSources(keywords);
       console.log(`Found ${sources.length} news sources`);
+      
+      // Check relevance of articles to video analysis
+      if (sources.length > 0) {
+        console.log("Checking article relevance to video analysis...");
+        sources = await checkArticleRelevance(analysis, sources);
+        console.log("Articles sorted by relevance score");
+      }
     } catch (newsError) {
       console.error('Error fetching news sources:', newsError);
       // Continue even if news sources fail - don't fail the whole request

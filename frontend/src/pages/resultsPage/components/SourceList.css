@@ -129,4 +129,51 @@
     text-decoration: none;
     color: inherit;
     display: block;
+}
+
+.relevance-indicator {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.high-relevance {
+    background-color: rgba(76, 175, 80, 0.1);
+    border-left: 4px solid #4caf50;
+}
+
+.medium-relevance {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+}
+
+.low-relevance {
+    background-color: rgba(244, 67, 54, 0.1);
+    border-left: 4px solid #f44336;
+}
+
+.relevance-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.score-value {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.score-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.relevance-explanation {
+    font-size: 0.9rem;
+    margin: 0;
+    font-style: italic;
+    color: #555;
 } 
