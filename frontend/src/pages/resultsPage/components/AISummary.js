@@ -67,7 +67,7 @@ const AISummary = () => {
                         <div className="no-video">No video available</div>
                     )}
                 </div>
-                <p className="video-url">Video URL: {videoUrl || 'N/A'}</p>
+                {videoUrl && <p className="video-url">Video URL: {videoUrl}</p>}
             </div>
             <div className="summary-section">
                 <h1>AI Detected!* (Probably)</h1>
