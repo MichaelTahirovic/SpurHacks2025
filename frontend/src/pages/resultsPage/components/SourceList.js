@@ -44,7 +44,7 @@ const SourceList = () => {
                     relevance: source.relevance || null
                 }))
                 // Filter out articles with relevance score <= 9 or no relevance score
-                .filter(article => article.relevance && article.relevance.score > 9);
+                .filter(article => article.relevance && article.relevance.score >= 9);
             
             setArticles(adaptedArticles);
         }
