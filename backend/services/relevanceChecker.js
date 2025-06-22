@@ -51,9 +51,7 @@ On a scale from 1 to 10, how relevant is this article to the video described in 
 5 = Somewhat related
 10 = Highly relevant, directly discusses the same topic
 
-Please respond with:
-1. A numerical score (1-10)
-2. Format your response as a JSON object with keys "score" (number)
+Please respond with ONLY a numerical score between 1 and 10, with no other text, formatting, or explanation.
 `;
 
       // Call Gemini API
@@ -67,15 +65,44 @@ Please respond with:
       let relevanceScore = 0;
       
       try {
-        // Try to parse as JSON first
-        const relevanceData = JSON.parse(responseText);
-        relevanceScore = relevanceData.score || 0;
+        // First try to extract just the number from the response
+        const numberMatch = responseText.match(/\b([1-9]|10)\b/);
+        if (numberMatch && numberMatch[0]) {
+          relevanceScore = parseInt(numberMatch[0], 10);
+          console.log(`Extracted score: ${relevanceScore}`);
+        } else {
+          // If no direct number found, try to clean and parse JSON
+          // Remove markdown code blocks and any text before/after JSON
+          const cleanedText = responseText
+            .replace(/```json|```/g, '')  // Remove code block markers
+            .trim();
+            
+          // Find the first { which likely starts the JSON
+          const jsonStartIndex = cleanedText.search(/\{/);
+          if (jsonStartIndex >= 0) {
+            // Find the last } which likely ends the JSON
+            const jsonEndIndex = cleanedText.lastIndexOf('}') + 1;
+            if (jsonEndIndex > 0) {
+              const jsonString = cleanedText.substring(jsonStartIndex, jsonEndIndex);
+              const relevanceData = JSON.parse(jsonString);
+              relevanceScore = relevanceData.score || 0;
+              console.log(`Parsed JSON score: ${relevanceScore}`);
+            }
+          }
+        }
       } catch (e) {
-        console.error("Failed to parse relevance JSON:", e);
-        // Try to extract score using regex if JSON parsing fails
-        const scoreMatch = responseText.match(/["']?score["']?\s*:\s*(\d+)/i);
-        if (scoreMatch && scoreMatch[1]) {
-          relevanceScore = parseInt(scoreMatch[1], 10);
+        console.error("Failed to parse relevance data:", e);
+        console.error("Raw response:", responseText);
+        
+        // Last resort: try to find any number in the response
+        const anyNumberMatch = responseText.match(/\d+/);
+        if (anyNumberMatch && anyNumberMatch[0]) {
+          const extractedNumber = parseInt(anyNumberMatch[0], 10);
+          // Only use if it's in the valid range
+          if (extractedNumber >= 1 && extractedNumber <= 10) {
+            relevanceScore = extractedNumber;
+            console.log(`Fallback extracted score: ${relevanceScore}`);
+          }
         }
       }
       

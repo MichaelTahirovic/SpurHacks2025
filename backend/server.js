@@ -8,10 +8,12 @@ import videoUploadRoute from './routes/videoUploadRoute.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:YOUR_FRONTEND_PORT']
+}));
 
 // Increase payload size limits for JSON and URL-encoded data
 app.use(bodyParser.json({limit: '100mb'}));

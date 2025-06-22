@@ -15,6 +15,27 @@ let extractedKeywords = [];
  * @param {string} base64Data - Base64 encoded video data
  * @returns {Promise<Object>} - Object containing analysis result and keywords
  */
+
+const getYouTubeTitle = async (url) => {
+    try {
+      // Extract video ID
+      const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+      if (!videoIdMatch) return null;
+      
+      // Use YouTube Data API with environment variable
+      const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoIdMatch[1]}&key=${process.env.YOUTUBE_API_KEY}&part=snippet`);
+      const data = await response.json();
+      
+      if (data.items && data.items.length > 0) {
+        return data.items[0].snippet.title;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching YouTube title:", error);
+      return null;
+    }
+  };
+  
 export async function analyzeVideoFromBase64(base64Data) {
   try {
     // First API call - the one we'll return to the user
@@ -98,11 +119,27 @@ export async function analyzeVideoFromBase64(base64Data) {
  */
 export async function analyzeVideoFromUrl(videoUrl) {
   try {
+    // Try to get the YouTube title first
+    let videoTitle = null;
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+      try {
+        videoTitle = await getYouTubeTitle(videoUrl);
+        console.log("Retrieved YouTube title:", videoTitle);
+      } catch (titleError) {
+        console.error("Failed to get YouTube title:", titleError);
+      }
+    }
+    
+    // Create a prompt that includes the title if available
+    const promptText = videoTitle 
+      ? `Video title: "${videoTitle}"\n\nProvide a concise 2-sentence summary of this video that clearly describes: 1) The main action or event taking place, and 2) The setting or context. If any recognizable public figures, celebrities, politicians, or well-known individuals appear in the video, explicitly identify them by full name. Focus on accurately naming only individuals who would be widely recognized by the general public. Do not speculate on the identity of unknown individuals.`
+      : "Provide a concise 2-sentence summary of this video that clearly describes: 1) The main action or event taking place, and 2) The setting or context. If any recognizable public figures, celebrities, politicians, or well-known individuals appear in the video, explicitly identify them by full name. Focus on accurately naming only individuals who would be widely recognized by the general public. Do not speculate on the identity of unknown individuals.";
+    
     const result = await model.generateContent({
         contents: [
           {
             parts: [
-              { text: "Please summarize the video in 3 sentences. " },
+              { text: promptText },
               { 
                 file_data: {
                   file_uri: videoUrl,
@@ -118,12 +155,16 @@ export async function analyzeVideoFromUrl(videoUrl) {
     
     // For URL-based videos, we'll use a simplified approach to get keywords
     try {
+      const keywordPrompt = videoTitle 
+        ? `Based on this video titled "${videoTitle}" with summary: "${analysisText}", extract exactly 3 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc. Do not put the JSON in a code block.`
+        : `Based on this video summary: "${analysisText}", list 3 keywords that would be important for web scraping related content."Based on this video summary, extract exactly 3 specific keywords in this format: 1. [Person]: Any notable person identified by name in the video (if none, use most relevant subject) 2. [Location]: The setting or location where the video takes place 3. [Action]: The main action or event happening in the video. Format as a JSON of just the keywords without explanations or numbers or tags indicating location, person, action, etc. Do not put the JSON in a code block."`;
+
       const keywordResult = await model.generateContent({
         contents: [
           {
             parts: [
               { 
-                text: `Based on this video summary: "${analysisText}", extract exactly 3 specific keywords that would be useful for searching related news articles. Format as a JSON array of just the keywords without explanations.`
+                text: keywordPrompt
               }
             ]
           }

@@ -5,6 +5,7 @@ import './AISummary.css';
 const AISummary = () => {
     const location = useLocation();
     const [videoUrl, setVideoUrl] = useState('');
+    const [embedUrl, setEmbedUrl] = useState('');
     const [isVideoFromBase64, setIsVideoFromBase64] = useState(false);
     const [analysis, setAnalysis] = useState('Error: No analysis provided.');
     const [keywords, setKeywords] = useState([]);
@@ -30,9 +31,13 @@ const AISummary = () => {
             if (location.state.videoData) {
                 convertBase64ToVideo(location.state.videoData);
                 setIsVideoFromBase64(true);
+                setEmbedUrl('');
             } else if (location.state.videoUrl) {
                 setVideoUrl(location.state.videoUrl);
                 setIsVideoFromBase64(false);
+                // Convert the URL to an embeddable format
+                const embedUrl = convertToEmbedUrl(location.state.videoUrl);
+                setEmbedUrl(embedUrl);
             }
             
             // Check for highly relevant sources (score > 9)
@@ -47,6 +52,23 @@ const AISummary = () => {
             }
         }
     }, [location]);
+
+    // Function to convert YouTube and other video URLs to embeddable format
+    const convertToEmbedUrl = (url) => {
+        if (!url) return '';
+        
+        // YouTube URL conversion
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const youtubeMatch = url.match(youtubeRegex);
+        
+        if (youtubeMatch && youtubeMatch[1]) {
+            // Return YouTube embed URL with the video ID
+            return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+        }
+        
+        // Default: return the original URL if we can't convert it
+        return url;
+    };
 
     const convertBase64ToVideo = (base64String) => {
         try {
@@ -77,7 +99,7 @@ const AISummary = () => {
                 <div className="verification-real">
                     <h1>Video Verified as Real</h1>
                     <p className="verification-note">
-                        Found {highlyRelevantSources} highly relevant sources {highlyRelevantSources !== 1 ? 's' : ''} 
+                        Found {highlyRelevantSources} highly relevant source{highlyRelevantSources !== 1 ? 's' : ''} 
                         confirming this content.
                     </p>
                 </div>
@@ -103,23 +125,27 @@ const AISummary = () => {
                             <video controls width="100%" height="100%" src={videoUrl}>
                                 Your browser does not support the video tag.
                             </video>
-                        ) : (
+                        ) : embedUrl ? (
                             <iframe
                                 width="100%"
                                 height="100%"
-                                src={videoUrl}
-                                title="YouTube video player"
+                                src={embedUrl}
+                                title="Video Player"
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                             ></iframe>
+                        ) : (
+                            <div className="no-video">
+                                Unable to embed video. <a href={videoUrl} target="_blank" rel="noopener noreferrer">View original</a>
+                            </div>
                         )
                     ) : (
                         <div className="no-video">No video available</div>
                     )}
                 </div>
                 {!isVideoFromBase64 && videoUrl && (
-                    <p className="video-url">Video URL: {videoUrl}</p>
+                    <p className="video-url">Video URL: <a href={videoUrl} target="_blank" rel="noopener noreferrer">{videoUrl}</a></p>
                 )}
             </div>
             <div className="summary-section">
