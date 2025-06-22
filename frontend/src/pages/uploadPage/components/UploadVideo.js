@@ -122,6 +122,7 @@ function UploadVideo() {
             state: { 
               analysis: result.results.analysis,
               sources: result.results.sources || [],
+              keywords: result.results.keywords || [],
               videoData: base64Data // Pass the base64 video data to display on results page
             } 
           });
@@ -152,6 +153,7 @@ function UploadVideo() {
             state: { 
               analysis: result.results.analysis,
               sources: result.results.sources || [],
+              keywords: result.results.keywords || [],
               videoUrl: socialMediaLink // Pass the video URL for display on results page
             } 
           });
