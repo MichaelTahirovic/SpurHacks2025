@@ -1,7 +1,7 @@
 # VerifAI
 The solution to giving an analysis on AI use in video production based on news articles revolving key search terms.
 
-[Demo](https://youtu.be/lK3spRU2EF0)\
+[Demo](https://youtu.be/bcqQidXC0OY)\
 [Devpost](https://devpost.com/software/verifai-prsv3e)
 
 # Setup
